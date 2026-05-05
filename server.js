@@ -11,7 +11,7 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Serve AdSense config safely to frontend (no secret keys exposed)
+// Serve AdSense config safely to frontend
 app.get('/api/config', (req, res) => {
   res.json({
     adsenseClient: process.env.ADSENSE_CLIENT_ID || 'ca-pub-XXXXXXXXXXXXXXXX',
@@ -19,35 +19,48 @@ app.get('/api/config', (req, res) => {
   });
 });
 
-// Gemini AI endpoint
+// Groq AI endpoint (free, works worldwide including Bangladesh)
 app.post('/api/analyze', async (req, res) => {
   const { prompt } = req.body;
 
   if (!prompt) return res.status(400).json({ error: 'Prompt is required.' });
 
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey || apiKey === 'your_gemini_api_key_here') {
-    return res.status(500).json({ error: 'Gemini API key not set. Open .env and add your key from https://aistudio.google.com/app/apikey' });
+  const apiKey = process.env.GROQ_API_KEY;
+  if (!apiKey || apiKey === 'your_groq_api_key_here') {
+    return res.status(500).json({ error: 'Groq API key not set. Get your free key from https://console.groq.com' });
   }
 
   try {
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
-    const response = await fetch(url, {
+    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`
+      },
       body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: { temperature: 0.7, maxOutputTokens: 1200 }
+        model: 'llama3-8b-8192',
+        messages: [
+          {
+            role: 'system',
+            content: 'You are a YouTube SEO expert. Always respond with valid JSON only. No markdown, no explanation, no extra text — just the raw JSON object.'
+          },
+          {
+            role: 'user',
+            content: prompt
+          }
+        ],
+        max_tokens: 1200,
+        temperature: 0.7
       })
     });
 
     if (!response.ok) {
       const err = await response.json();
-      return res.status(response.status).json({ error: err.error?.message || 'Gemini API error' });
+      return res.status(response.status).json({ error: err.error?.message || 'Groq API error' });
     }
 
     const data = await response.json();
-    const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    const text = data.choices?.[0]?.message?.content || '';
     const clean = text.replace(/```json|```/g, '').trim();
     const parsed = JSON.parse(clean);
     res.json(parsed);
@@ -63,5 +76,5 @@ app.get('*', (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`\n✅ TubeRank running at http://localhost:${PORT}\n`);
+  console.log(`\n✅ TubeRank (Groq Free) running at http://localhost:${PORT}\n`);
 });
