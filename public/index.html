@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>TubeRank — Free YouTube SEO Suite</title>
+<meta name="description" content="Free AI-powered YouTube SEO tool. Keyword research, description generator, competitor analysis."/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --red:#FF3B30; --bg:#0a0a0a; --bg2:#111; --bg3:#1a1a1a; --bg4:#222;
+  --border:rgba(255,255,255,0.08); --border2:rgba(255,255,255,0.14);
+  --text:#f0f0f0; --text2:#888; --text3:#555;
+  --radius:10px; --radius-lg:16px;
+  --max-w:860px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:15px;line-height:1.6;-webkit-font-smoothing:antialiased;}
+
+/* ── HEADER ── */
+.header{border-bottom:1px solid var(--border);padding:0 1.25rem;display:flex;align-items:center;justify-content:space-between;height:56px;position:sticky;top:0;background:rgba(10,10,10,0.95);backdrop-filter:blur(14px);z-index:200;}
+.logo{display:flex;align-items:center;gap:9px;font-size:16px;font-weight:600;letter-spacing:-0.02em;text-decoration:none;color:var(--text);}
+.logo-icon{width:28px;height:28px;background:var(--red);border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.logo-icon svg{width:15px;height:15px;fill:#fff;}
+.header-right{display:flex;align-items:center;gap:8px;}
+.badge-free{font-size:11px;font-weight:500;padding:3px 9px;border-radius:99px;background:rgba(34,197,94,0.12);color:#4ade80;border:1px solid rgba(34,197,94,0.2);font-family:'DM Mono',monospace;white-space:nowrap;}
+.usage-pill{font-size:11px;font-weight:500;padding:3px 10px;border-radius:99px;background:var(--bg3);color:var(--text2);border:1px solid var(--border2);font-family:'DM Mono',monospace;cursor:default;white-space:nowrap;}
+.usage-pill.low{color:#fbbf24;border-color:rgba(245,158,11,0.3);background:rgba(245,158,11,0.08);}
+.usage-pill.empty{color:#f87171;border-color:rgba(239,68,68,0.3);background:rgba(239,68,68,0.08);}
+
+/* ── MAIN ── */
+.main{max-width:var(--max-w);margin:0 auto;padding:2rem 1.25rem 5rem;}
+
+/* ── HERO ── */
+.hero{margin-bottom:2rem;}
+.hero-badge{display:inline-flex;align-items:center;gap:6px;font-size:11px;padding:4px 11px;border-radius:99px;background:rgba(34,197,94,0.08);color:#4ade80;border:1px solid rgba(34,197,94,0.18);font-family:'DM Mono',monospace;margin-bottom:12px;}
+.hero h1{font-size:clamp(24px,5vw,38px);font-weight:600;letter-spacing:-0.03em;line-height:1.15;margin-bottom:10px;}
+.hero h1 span{color:var(--red);}
+.hero p{font-size:14px;color:var(--text2);max-width:460px;line-height:1.6;}
+
+/* ── TABS ── */
+.tabs{display:flex;border:1px solid var(--border2);border-radius:var(--radius);overflow:hidden;margin-bottom:1.75rem;background:var(--bg2);}
+.tab-btn{flex:1;padding:10px 8px;font-size:13px;font-weight:500;font-family:'DM Sans',sans-serif;cursor:pointer;border:none;background:transparent;color:var(--text2);transition:all 0.15s;border-right:1px solid var(--border);display:flex;align-items:center;justify-content:center;gap:6px;}
+.tab-btn:last-child{border-right:none;}
+.tab-btn.active{background:var(--bg3);color:var(--text);}
+.tab-btn:hover:not(.active){color:var(--text);background:rgba(255,255,255,0.03);}
+.tab-icon{font-size:14px;flex-shrink:0;}
+.tab-label{white-space:nowrap;}
+.page{display:none;}.page.active{display:block;}
+
+/* ── SEARCH ── */
+.search-row{display:flex;gap:8px;margin-bottom:1.5rem;}
+.search-row input{flex:1;min-width:0;height:44px;background:var(--bg2);border:1px solid var(--border2);border-radius:var(--radius);color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;padding:0 14px;outline:none;transition:border 0.15s;}
+.search-row input:focus{border-color:rgba(255,255,255,0.3);}
+.search-row input::placeholder{color:var(--text3);}
+.btn-primary{height:44px;padding:0 18px;background:var(--red);color:#fff;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;border:none;border-radius:var(--radius);cursor:pointer;white-space:nowrap;transition:opacity 0.15s,transform 0.1s;flex-shrink:0;}
+.btn-primary:hover{opacity:0.88;}
+.btn-primary:active{transform:scale(0.97);}
+.btn-primary:disabled{opacity:0.4;cursor:not-allowed;}
+
+/* ── METRICS ── */
+.metrics-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin-bottom:1.5rem;}
+.metric-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px;}
+.metric-label{font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:5px;font-weight:500;}
+.metric-val{font-size:20px;font-weight:600;letter-spacing:-0.02em;color:var(--text);}
+.metric-sub{font-size:10px;color:var(--text3);margin-top:2px;}
+
+/* ── MISC UI ── */
+.sec-label{font-size:10px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:9px;}
+.divider{height:1px;background:var(--border);margin:1.5rem 0;}
+.row-btns{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:1.5rem;}
+.btn-sec{height:36px;padding:0 14px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;border:1px solid var(--border2);border-radius:var(--radius);background:transparent;color:var(--text2);cursor:pointer;transition:all 0.15s;white-space:nowrap;}
+.btn-sec:hover{color:var(--text);background:var(--bg3);border-color:rgba(255,255,255,0.25);}
+
+/* ── KEYWORDS ── */
+.kw-list{display:flex;flex-direction:column;gap:5px;margin-bottom:1.5rem;}
+.kw-row{display:flex;align-items:center;gap:8px;padding:9px 12px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);transition:border-color 0.15s;}
+.kw-row:hover{border-color:var(--border2);}
+.kw-name{flex:1;min-width:0;font-size:12px;color:var(--text);font-family:'DM Mono',monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.bar-wrap{width:60px;height:4px;background:var(--bg4);border-radius:99px;overflow:hidden;flex-shrink:0;}
+.bar{height:100%;border-radius:99px;background:#3b82f6;}
+.badge{font-size:10px;font-weight:500;padding:2px 7px;border-radius:99px;font-family:'DM Mono',monospace;flex-shrink:0;}
+.badge-h{background:rgba(34,197,94,0.12);color:#4ade80;border:1px solid rgba(34,197,94,0.2);}
+.badge-m{background:rgba(245,158,11,0.12);color:#fbbf24;border:1px solid rgba(245,158,11,0.2);}
+.badge-l{background:rgba(239,68,68,0.12);color:#f87171;border:1px solid rgba(239,68,68,0.2);}
+
+/* ── TAGS ── */
+.tags-wrap{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:1rem;}
+.tag{font-size:11px;padding:4px 10px;border-radius:99px;cursor:pointer;border:1px solid var(--border2);background:var(--bg2);color:var(--text2);transition:all 0.15s;font-family:'DM Mono',monospace;}
+.tag:hover{color:var(--text);border-color:rgba(255,255,255,0.25);}
+.tag.sel{background:rgba(59,130,246,0.15);color:#93c5fd;border-color:rgba(59,130,246,0.35);}
+
+/* ── TITLES ── */
+.title-row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 12px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:6px;font-size:13px;color:var(--text);transition:border-color 0.15s;}
+.title-row:hover{border-color:var(--border2);}
+.copy-btn{font-size:11px;padding:3px 9px;cursor:pointer;color:var(--text2);border:1px solid var(--border2);border-radius:6px;background:transparent;font-family:'DM Mono',monospace;white-space:nowrap;transition:all 0.15s;flex-shrink:0;}
+.copy-btn:hover{color:var(--text);background:var(--bg3);}
+
+/* ── DESCRIPTION ── */
+.desc-box{width:100%;min-height:150px;padding:11px 13px;font-size:12px;border:1px solid var(--border2);border-radius:var(--radius);background:var(--bg2);color:var(--text);font-family:'DM Mono',monospace;resize:vertical;margin-bottom:1rem;outline:none;line-height:1.6;transition:border-color 0.15s;}
+.desc-box:focus{border-color:rgba(255,255,255,0.3);}
+.strength-bar-bg{height:5px;background:var(--bg4);border-radius:99px;overflow:hidden;margin-top:5px;}
+.strength-bar{height:100%;border-radius:99px;transition:width 0.6s ease;}
+.hashtag{font-size:11px;padding:4px 10px;border-radius:99px;background:rgba(167,139,250,0.12);color:#c4b5fd;border:1px solid rgba(167,139,250,0.25);font-family:'DM Mono',monospace;}
+
+/* ── COMPETITOR ── */
+.comp-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px 16px;margin-bottom:9px;transition:border-color 0.15s;}
+.comp-card:hover{border-color:var(--border2);}
+.comp-name{font-size:14px;font-weight:600;color:var(--text);margin-bottom:4px;}
+.comp-meta{font-size:11px;color:var(--text2);margin-bottom:10px;font-family:'DM Mono',monospace;line-height:1.8;}
+.comp-tags{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:9px;}
+.comp-tag{font-size:10px;padding:3px 8px;border-radius:99px;background:var(--bg3);color:var(--text3);border:1px solid var(--border);font-family:'DM Mono',monospace;}
+.comp-insight{font-size:12px;color:var(--text2);margin-top:3px;line-height:1.5;}
+.gap-item{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:6px;}
+.gap-num{font-size:10px;font-weight:600;color:var(--text3);min-width:18px;font-family:'DM Mono',monospace;padding-top:2px;}
+.gap-text{font-size:13px;color:var(--text);line-height:1.5;}
+.strategy-box{padding:13px 15px;background:rgba(59,130,246,0.07);border:1px solid rgba(59,130,246,0.2);border-radius:var(--radius);font-size:13px;color:var(--text);line-height:1.7;margin-bottom:1.5rem;}
+
+/* ── STATES ── */
+.loading{text-align:center;padding:3rem 0;color:var(--text2);font-size:13px;}
+.dot::after{content:'...';animation:dots 1.2s steps(4,end) infinite;}
+@keyframes dots{0%,100%{content:'.'}33%{content:'..'}66%{content:'...'}}
+.empty{color:var(--text3);font-size:13px;text-align:center;padding:3rem 0;line-height:1.8;}
+.error-box{background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);border-radius:var(--radius);padding:13px 15px;font-size:13px;color:#f87171;}
+
+/* ── AD GATE MODAL ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.85);backdrop-filter:blur(6px);z-index:1000;display:flex;align-items:center;justify-content:center;padding:1rem;opacity:0;pointer-events:none;transition:opacity 0.2s;}
+.modal-overlay.show{opacity:1;pointer-events:all;}
+.modal{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--radius-lg);padding:2rem 1.5rem;max-width:420px;width:100%;text-align:center;position:relative;}
+.modal-icon{font-size:36px;margin-bottom:12px;}
+.modal h2{font-size:20px;font-weight:600;letter-spacing:-0.02em;margin-bottom:8px;}
+.modal p{font-size:13px;color:var(--text2);margin-bottom:1.5rem;line-height:1.6;}
+.modal-ad-area{background:var(--bg3);border:1px dashed var(--border2);border-radius:var(--radius);min-height:120px;margin-bottom:1.25rem;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:1rem;position:relative;overflow:hidden;}
+.modal-ad-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px;font-family:'DM Mono',monospace;}
+.ad-timer{font-size:28px;font-weight:600;color:var(--text);font-family:'DM Mono',monospace;margin-bottom:4px;}
+.ad-timer-label{font-size:12px;color:var(--text2);}
+.modal-close{position:absolute;top:12px;right:14px;font-size:18px;cursor:pointer;color:var(--text3);background:none;border:none;line-height:1;padding:4px;}
+.modal-close:hover{color:var(--text);}
+.btn-watch{width:100%;height:44px;background:var(--red);color:#fff;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;border:none;border-radius:var(--radius);cursor:pointer;transition:opacity 0.15s;margin-bottom:10px;}
+.btn-watch:hover{opacity:0.88;}
+.btn-watch:disabled{opacity:0.4;cursor:not-allowed;}
+.modal-note{font-size:11px;color:var(--text3);font-family:'DM Mono',monospace;}
+.unlock-success{background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.2);border-radius:var(--radius);padding:10px 14px;font-size:13px;color:#4ade80;margin-bottom:1rem;display:none;}
+.unlock-success.show{display:block;}
+
+/* ── USAGE BANNER ── */
+.usage-banner{background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);border-radius:var(--radius);padding:10px 14px;font-size:13px;color:#fbbf24;margin-bottom:1.25rem;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;}
+.usage-banner button{font-size:12px;padding:5px 12px;border-radius:99px;background:rgba(245,158,11,0.15);color:#fbbf24;border:1px solid rgba(245,158,11,0.3);cursor:pointer;white-space:nowrap;font-family:'DM Sans',sans-serif;}
+.usage-banner button:hover{background:rgba(245,158,11,0.25);}
+
+/* ── ADSENSE BANNER ── */
+.adsense-banner{margin:1.5rem 0;text-align:center;min-height:90px;border-radius:var(--radius);overflow:hidden;}
+.adsense-banner ins{display:block;}
+
+/* ── FOOTER ── */
+.footer{border-top:1px solid var(--border);padding:1.25rem;text-align:center;font-size:11px;color:var(--text3);}
+.footer a{color:var(--text2);text-decoration:none;}
+.footer a:hover{color:var(--text);}
+
+/* ── RESPONSIVE ── */
+@media(max-width:480px){
+  .tab-label{display:none;}
+  .tab-btn{padding:10px 6px;}
+  .hero h1{font-size:22px;}
+  .metrics-grid{grid-template-columns:1fr 1fr;}
+  .modal{padding:1.5rem 1.25rem;}
+  .kw-name{font-size:11px;}
+  .bar-wrap{width:45px;}
+}
+@media(min-width:481px) and (max-width:768px){
+  .metrics-grid{grid-template-columns:repeat(2,1fr);}
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="header">
+  <a class="logo" href="/">
+    <div class="logo-icon">
+      <svg viewBox="0 0 24 24"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.69a8.18 8.18 0 004.78 1.52V6.76a4.85 4.85 0 01-1.01-.07z"/></svg>
+    </div>
+    TubeRank
+  </a>
+  <div class="header-right">
+    <span class="badge-free">✦ FREE</span>
+    <span class="usage-pill" id="usagePill">5 searches left</span>
+  </div>
+</header>
+
+<!-- AD GATE MODAL -->
+<div class="modal-overlay" id="adModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div class="modal-icon">🎬</div>
+    <h2>You've used all 5 free searches</h2>
+    <p>Watch a short ad to unlock <strong>5 more searches</strong> — completely free, no sign-up needed.</p>
+
+    <div class="unlock-success" id="unlockSuccess">
+      ✅ +5 searches unlocked! You're good to go.
+    </div>
+
+    <div class="modal-ad-area" id="adContainer">
+      <div class="modal-ad-label">Advertisement</div>
+      <!-- Real AdSense ad injected here by JS -->
+      <div id="adSlotInner"></div>
+    </div>
+
+    <div id="adTimerWrap" style="margin-bottom:1rem;display:none;">
+      <div class="ad-timer" id="adTimer">5</div>
+      <div class="ad-timer-label">seconds until unlock</div>
+    </div>
+
+    <button class="btn-watch" id="watchBtn" onclick="startAdFlow()">▶ Watch Ad to Unlock 5 Searches</button>
+    <div class="modal-note">Ads keep TubeRank 100% free for everyone</div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<main class="main">
+  <div class="hero">
+    <div class="hero-badge">✦ Powered by Gemini AI — Free forever</div>
+    <h1>YouTube SEO,<br><span>done right.</span></h1>
+    <p>Keyword research, description generator &amp; competitor analysis — all free. Watch an ad to keep going.</p>
+  </div>
+
+  <!-- Usage warning banner (shown when ≤2 left) -->
+  <div class="usage-banner" id="usageBanner" style="display:none;">
+    <span id="bannerText">⚠ Only 2 searches left</span>
+    <button onclick="openModal()">Watch ad for +5 more</button>
+  </div>
+
+  <!-- AdSense banner top -->
+  <div class="adsense-banner" id="topBanner"></div>
+
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('keywords',this)">
+      <span class="tab-icon">🔍</span><span class="tab-label">Keywords</span>
+    </button>
+    <button class="tab-btn" onclick="switchTab('description',this)">
+      <span class="tab-icon">✍️</span><span class="tab-label">Description</span>
+    </button>
+    <button class="tab-btn" onclick="switchTab('competitor',this)">
+      <span class="tab-icon">📊</span><span class="tab-label">Competitors</span>
+    </button>
+  </div>
+
+  <!-- KEYWORDS -->
+  <div id="keywords" class="page active">
+    <div class="search-row">
+      <input type="text" id="kwInput" placeholder="e.g. how to make money online"/>
+      <button class="btn-primary" id="kwBtn" onclick="run('keywords')">Analyze</button>
+    </div>
+    <div id="kwResults"><div class="empty">Enter a topic to get keyword ideas,<br>tags &amp; optimized titles.</div></div>
+  </div>
+
+  <!-- DESCRIPTION -->
+  <div id="description" class="page">
+    <div class="search-row">
+      <input type="text" id="descInput" placeholder="e.g. 10 Python tips every beginner needs"/>
+      <button class="btn-primary" id="descBtn" onclick="run('description')">Generate</button>
+    </div>
+    <div id="descResults"><div class="empty">Enter your video title to generate<br>a full SEO-optimized description.</div></div>
+  </div>
+
+  <!-- COMPETITOR -->
+  <div id="competitor" class="page">
+    <div class="search-row">
+      <input type="text" id="compInput" placeholder="e.g. personal finance YouTube niche"/>
+      <button class="btn-primary" id="compBtn" onclick="run('competitor')">Analyze</button>
+    </div>
+    <div id="compResults"><div class="empty">Enter a niche to find top competitors<br>and content gaps.</div></div>
+  </div>
+
+  <!-- AdSense banner bottom -->
+  <div class="adsense-banner" id="bottomBanner" style="margin-top:2rem;"></div>
+</main>
+
+<footer class="footer">
+  TubeRank &nbsp;·&nbsp; Powered by Google Gemini &nbsp;·&nbsp;
+  <a href="https://aistudio.google.com/app/apikey" target="_blank">Get free API key</a>
+  &nbsp;·&nbsp;
+  <a href="https://adsense.google.com" target="_blank">AdSense</a>
+</footer>
+
+<script>
+// ── CONFIG (loaded from server) ──
+let ADSENSE_CLIENT = 'ca-pub-XXXXXXXXXXXXXXXX';
+let ADSENSE_SLOT   = 'XXXXXXXXXX';
+
+// ── USAGE SYSTEM ──
+const FREE_LIMIT = 5;
+const AD_BONUS   = 5;
+const STORAGE_KEY = 'tuberank_searches';
+
+function getUsage() {
+  try { return parseInt(localStorage.getItem(STORAGE_KEY) || '0', 10); } catch { return 0; }
+}
+function setUsage(n) {
+  try { localStorage.setItem(STORAGE_KEY, String(n)); } catch {}
+}
+function getRemainingSearches() {
+  return Math.max(0, FREE_LIMIT - getUsage());
+}
+function incrementUsage() {
+  setUsage(getUsage() + 1);
+}
+function addBonusSearches() {
+  const current = getUsage();
+  setUsage(Math.max(0, current - AD_BONUS));
+}
+
+function updateUsageUI() {
+  const left = getRemainingSearches();
+  const pill = document.getElementById('usagePill');
+  const banner = document.getElementById('usageBanner');
+  const bannerText = document.getElementById('bannerText');
+
+  pill.textContent = left + ' search' + (left !== 1 ? 'es' : '') + ' left';
+  pill.className = 'usage-pill' + (left <= 1 ? ' empty' : left <= 2 ? ' low' : '');
+
+  if (left <= 2 && left > 0) {
+    banner.style.display = 'flex';
+    bannerText.textContent = `⚠ Only ${left} search${left !== 1 ? 'es' : ''} left — watch an ad for 5 more`;
+  } else if (left === 0) {
+    banner.style.display = 'flex';
+    bannerText.textContent = '🚫 No searches left — watch an ad to continue';
+  } else {
+    banner.style.display = 'none';
+  }
+}
+
+// ── MODAL ──
+function openModal() {
+  document.getElementById('adModal').classList.add('show');
+  document.getElementById('unlockSuccess').classList.remove('show');
+  document.getElementById('watchBtn').disabled = false;
+  document.getElementById('watchBtn').textContent = '▶ Watch Ad to Unlock 5 Searches';
+  document.getElementById('adTimerWrap').style.display = 'none';
+  loadAdInModal();
+}
+function closeModal() {
+  document.getElementById('adModal').classList.remove('show');
+}
+document.getElementById('adModal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+
+// ── ADSENSE LOADER ──
+function loadAdSenseScript() {
+  if (document.getElementById('adsense-script')) return;
+  const s = document.createElement('script');
+  s.id = 'adsense-script';
+  s.async = true;
+  s.src = `https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE_CLIENT}`;
+  s.crossOrigin = 'anonymous';
+  document.head.appendChild(s);
+}
+
+function injectAd(containerId, format = 'auto', fullWidth = false) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  container.innerHTML = '';
+  const ins = document.createElement('ins');
+  ins.className = 'adsbygoogle';
+  ins.style.display = 'block';
+  if (fullWidth) ins.style.width = '100%';
+  ins.setAttribute('data-ad-client', ADSENSE_CLIENT);
+  ins.setAttribute('data-ad-slot', ADSENSE_SLOT);
+  ins.setAttribute('data-ad-format', format);
+  ins.setAttribute('data-full-width-responsive', 'true');
+  container.appendChild(ins);
+  try { (window.adsbygoogle = window.adsbygoogle || []).push({}); } catch(e) {}
+}
+
+function loadAdInModal() {
+  injectAd('adSlotInner', 'rectangle');
+}
+
+// ── AD FLOW (watch ad = 30s timer counts, then unlocks) ──
+let adTimerInterval = null;
+
+function startAdFlow() {
+  const btn = document.getElementById('watchBtn');
+  const timerWrap = document.getElementById('adTimerWrap');
+  const timerEl = document.getElementById('adTimer');
+
+  btn.disabled = true;
+  btn.textContent = 'Watching ad...';
+  timerWrap.style.display = 'block';
+
+  // Load a fresh ad
+  loadAdInModal();
+
+  let seconds = 30;
+  timerEl.textContent = seconds;
+
+  clearInterval(adTimerInterval);
+  adTimerInterval = setInterval(() => {
+    seconds--;
+    timerEl.textContent = seconds;
+    if (seconds <= 0) {
+      clearInterval(adTimerInterval);
+      unlockSearches();
+    }
+  }, 1000);
+}
+
+function unlockSearches() {
+  addBonusSearches();
+  updateUsageUI();
+  document.getElementById('adTimerWrap').style.display = 'none';
+  document.getElementById('unlockSuccess').classList.add('show');
+  document.getElementById('watchBtn').textContent = '✓ Unlocked! Close this';
+  document.getElementById('watchBtn').disabled = false;
+  document.getElementById('watchBtn').onclick = closeModal;
+  setTimeout(closeModal, 2500);
+}
+
+// ── TABS ──
+function switchTab(id, btn) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  btn.classList.add('active');
+}
+
+// ── API CALL ──
+async function callAI(prompt) {
+  const res = await fetch('/api/analyze', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ prompt })
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || 'Server error');
+  return data;
+}
+
+// ── GATE CHECK ──
+function checkGate() {
+  if (getRemainingSearches() <= 0) {
+    openModal();
+    return false;
+  }
+  return true;
+}
+
+// ── HELPERS ──
+let selTags = new Set();
+
+function copyText(text, btn) {
+  navigator.clipboard.writeText(text).then(() => {
+    const o = btn.textContent;
+    btn.textContent = 'Copied!';
+    setTimeout(() => btn.textContent = o, 1500);
+  });
+}
+function toggleTag(el, tag) {
+  if (selTags.has(tag)) { selTags.delete(tag); el.classList.remove('sel'); }
+  else { selTags.add(tag); el.classList.add('sel'); }
+}
+function showError(el, msg) {
+  el.innerHTML = `<div class="error-box">⚠ ${msg}</div>`;
+}
+const sc = s => s==='High'?'badge-h':s==='Medium'?'badge-m':'badge-l';
+const compStyle = c => {
+  if(c==='Low') return 'color:#4ade80;background:rgba(34,197,94,0.12);border:1px solid rgba(34,197,94,0.2);';
+  if(c==='Medium') return 'color:#fbbf24;background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.2);';
+  return 'color:#f87171;background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.2);';
+};
+const barColor = v => v>=80?'#22c55e':v>=60?'#f59e0b':'#ef4444';
+
+// ── MAIN RUN ──
+async function run(type) {
+  if (!checkGate()) return;
+
+  const inputs = { keywords:'kwInput', description:'descInput', competitor:'compInput' };
+  const btns   = { keywords:'kwBtn',   description:'descBtn',   competitor:'compBtn'   };
+  const results= { keywords:'kwResults',description:'descResults',competitor:'compResults'};
+
+  const value = document.getElementById(inputs[type]).value.trim();
+  if (!value) return;
+
+  const btn = document.getElementById(btns[type]);
+  const el  = document.getElementById(results[type]);
+  btn.disabled = true;
+  btn.textContent = type === 'keywords' ? 'Analyzing...' : type === 'description' ? 'Generating...' : 'Analyzing...';
+  el.innerHTML = `<div class="loading"><span class="dot">${type === 'description' ? 'Writing your description' : 'Researching'}</span></div>`;
+  selTags = new Set();
+
+  try {
+    let d;
+    if (type === 'keywords') {
+      d = await callAI(`You are a YouTube SEO expert. Topic: "${value}".
+Return ONLY valid JSON, no markdown:
+{"searchVolume":"10K-50K","competition":"Low","trendScore":75,"viralScore":82,
+"tags":["tag1","tag2","tag3","tag4","tag5","tag6","tag7","tag8","tag9","tag10"],
+"keywords":[
+  {"name":"long tail keyword phrase","score":"High","volume":88},
+  {"name":"another keyword phrase","score":"High","volume":74},
+  {"name":"medium keyword phrase","score":"Medium","volume":61},
+  {"name":"another medium keyword","score":"Medium","volume":52},
+  {"name":"low competition keyword","score":"Low","volume":37},
+  {"name":"niche keyword phrase","score":"Low","volume":28}
+],
+"titles":["Compelling title 1 with keyword","Compelling title 2 with hook","Compelling title 3 with number"]}`);
+
+      el.innerHTML = `
+        <div class="metrics-grid">
+          <div class="metric-card"><div class="metric-label">Search volume</div><div class="metric-val">${d.searchVolume}</div><div class="metric-sub">monthly est.</div></div>
+          <div class="metric-card"><div class="metric-label">Competition</div><div style="margin-top:5px;display:inline-block;font-size:12px;font-weight:600;padding:3px 10px;border-radius:99px;font-family:'DM Mono',monospace;${compStyle(d.competition)}">${d.competition}</div></div>
+          <div class="metric-card"><div class="metric-label">Trend score</div><div class="metric-val">${d.trendScore}<span style="font-size:12px;font-weight:400;color:var(--text2)">/100</span></div></div>
+          <div class="metric-card"><div class="metric-label">Viral potential</div><div class="metric-val">${d.viralScore}<span style="font-size:12px;font-weight:400;color:var(--text2)">/100</span></div></div>
+        </div>
+        <div class="sec-label">Keyword ideas</div>
+        <div class="kw-list">${d.keywords.map(k=>`
+          <div class="kw-row">
+            <span class="kw-name">${k.name}</span>
+            <div class="bar-wrap"><div class="bar" style="width:${k.volume}%"></div></div>
+            <span class="badge ${sc(k.score)}">${k.score}</span>
+            <button class="copy-btn" onclick="copyText('${k.name.replace(/'/g,"\\'")}',this)">Copy</button>
+          </div>`).join('')}</div>
+        <div class="divider"></div>
+        <div class="sec-label">Tags <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--text3)">— tap to select</span></div>
+        <div class="tags-wrap">${d.tags.map(t=>`<span class="tag" onclick="toggleTag(this,'${t.replace(/'/g,"\\'")}')"> ${t}</span>`).join('')}</div>
+        <div class="row-btns">
+          <button class="btn-sec" onclick="if(selTags.size){navigator.clipboard.writeText([...selTags].join(', ')).then(()=>{const b=this;b.textContent='Copied!';setTimeout(()=>b.textContent='Copy selected',1500)})}else alert('Tap some tags first.')">Copy selected</button>
+          <button class="btn-sec" onclick="navigator.clipboard.writeText(${JSON.stringify(d.tags)}.join(', ')).then(()=>{const b=this;b.textContent='Copied!';setTimeout(()=>b.textContent='Copy all tags',1500)})">Copy all tags</button>
+        </div>
+        <div class="divider"></div>
+        <div class="sec-label">Title suggestions</div>
+        ${d.titles.map(t=>`<div class="title-row"><span style="flex:1;min-width:0;">${t}</span><button class="copy-btn" onclick="copyText('${t.replace(/'/g,"\\'")}',this)">Copy</button></div>`).join('')}
+      `;
+
+    } else if (type === 'description') {
+      d = await callAI(`YouTube SEO expert. Video title: "${value}".
+Return ONLY valid JSON no markdown:
+{"description":"Full 200+ word SEO-optimized YouTube description with hook, overview, timestamps (00:00 Intro, 02:30 Main content, 08:00 Key tips, 14:00 Outro), subscribe CTA, links placeholder","hashtags":["#tag1","#tag2","#tag3","#tag4","#tag5","#tag6","#tag7","#tag8","#tag9","#tag10"],"seoScore":84,"readability":"Excellent","keywordsFound":["keyword1","keyword2","keyword3","keyword4"]}`);
+
+      el.innerHTML = `
+        <div class="metrics-grid" style="grid-template-columns:repeat(3,minmax(0,1fr));">
+          <div class="metric-card"><div class="metric-label">SEO score</div><div class="metric-val">${d.seoScore}<span style="font-size:12px;font-weight:400;color:var(--text2)">/100</span></div></div>
+          <div class="metric-card"><div class="metric-label">Readability</div><div style="margin-top:5px;"><span class="badge ${d.readability==='Excellent'?'badge-h':'badge-m'}">${d.readability}</span></div></div>
+          <div class="metric-card"><div class="metric-label">Keywords</div><div class="metric-val">${d.keywordsFound.length}</div></div>
+        </div>
+        <div style="margin-bottom:1.25rem;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+            <span class="sec-label" style="margin:0">Strength</span>
+            <span style="font-size:11px;font-weight:600;color:var(--text2);font-family:'DM Mono',monospace">${d.seoScore}%</span>
+          </div>
+          <div class="strength-bar-bg"><div class="strength-bar" style="width:${d.seoScore}%;background:${barColor(d.seoScore)};"></div></div>
+        </div>
+        <div class="sec-label">Generated description</div>
+        <textarea class="desc-box" id="generatedDesc">${d.description}</textarea>
+        <div class="row-btns">
+          <button class="btn-sec" onclick="navigator.clipboard.writeText(document.getElementById('generatedDesc').value).then(()=>{const b=this;b.textContent='Copied!';setTimeout(()=>b.textContent='Copy description',1500)})">Copy description</button>
+        </div>
+        <div class="divider"></div>
+        <div class="sec-label">Hashtags</div>
+        <div class="tags-wrap" style="margin-bottom:1rem;">${d.hashtags.map(h=>`<span class="hashtag">${h}</span>`).join('')}</div>
+        <div class="row-btns">
+          <button class="btn-sec" onclick="navigator.clipboard.writeText(${JSON.stringify(d.hashtags)}.join(' ')).then(()=>{const b=this;b.textContent='Copied!';setTimeout(()=>b.textContent='Copy hashtags',1500)})">Copy hashtags</button>
+        </div>
+        <div class="divider"></div>
+        <div class="sec-label">Keywords detected</div>
+        <div class="tags-wrap">${d.keywordsFound.map(k=>`<span class="tag sel">${k}</span>`).join('')}</div>
+      `;
+
+    } else {
+      d = await callAI(`YouTube SEO expert. Niche: "${value}".
+Return ONLY valid JSON no markdown:
+{"nicheScore":72,"avgViews":"40K-180K","topChannels":[
+  {"name":"Channel A","subscribers":"800K","uploadFreq":"3x/week","avgViews":"95K","topTags":["tag1","tag2","tag3","tag4"],"weakness":"specific weakness","opportunity":"specific opportunity"},
+  {"name":"Channel B","subscribers":"1.5M","uploadFreq":"daily","avgViews":"65K","topTags":["tag1","tag2","tag3"],"weakness":"weakness","opportunity":"opportunity"},
+  {"name":"Channel C","subscribers":"300K","uploadFreq":"2x/week","avgViews":"45K","topTags":["tag1","tag2","tag3"],"weakness":"weakness","opportunity":"opportunity"}
+],"contentGaps":["Gap 1 with detail","Gap 2","Gap 3","Gap 4"],"recommendedStrategy":"2-3 sentence actionable entry strategy."}`);
+
+      const bc = v => v>=75?'#22c55e':v>=50?'#f59e0b':'#ef4444';
+      el.innerHTML = `
+        <div class="metrics-grid" style="grid-template-columns:repeat(3,minmax(0,1fr));">
+          <div class="metric-card"><div class="metric-label">Niche score</div><div class="metric-val">${d.nicheScore}<span style="font-size:12px;font-weight:400;color:var(--text2)">/100</span></div></div>
+          <div class="metric-card"><div class="metric-label">Avg views</div><div class="metric-val" style="font-size:15px;margin-top:3px;">${d.avgViews}</div></div>
+          <div class="metric-card"><div class="metric-label">Competitors</div><div class="metric-val">${d.topChannels.length}</div></div>
+        </div>
+        <div style="margin-bottom:1.5rem;">
+          <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+            <span class="sec-label" style="margin:0">Opportunity score</span>
+            <span style="font-size:11px;font-weight:600;color:var(--text2);font-family:'DM Mono',monospace">${d.nicheScore}%</span>
+          </div>
+          <div class="strength-bar-bg"><div class="strength-bar" style="width:${d.nicheScore}%;background:${bc(d.nicheScore)};"></div></div>
+        </div>
+        <div class="sec-label">Top competitors</div>
+        ${d.topChannels.map(c=>`
+          <div class="comp-card">
+            <div class="comp-name">${c.name}</div>
+            <div class="comp-meta">${c.subscribers} subs · ${c.uploadFreq} · avg ${c.avgViews} views</div>
+            <div class="comp-tags">${c.topTags.map(t=>`<span class="comp-tag">${t}</span>`).join('')}</div>
+            <div class="comp-insight"><span style="color:#f87171;font-weight:500;">Weakness:</span> ${c.weakness}</div>
+            <div class="comp-insight"><span style="color:#4ade80;font-weight:500;">Opportunity:</span> ${c.opportunity}</div>
+          </div>`).join('')}
+        <div class="divider"></div>
+        <div class="sec-label">Content gaps to fill</div>
+        <div style="margin-bottom:1.5rem;">${d.contentGaps.map((g,i)=>`
+          <div class="gap-item">
+            <span class="gap-num">0${i+1}</span>
+            <span class="gap-text">${g}</span>
+          </div>`).join('')}</div>
+        <div class="divider"></div>
+        <div class="sec-label">Recommended strategy</div>
+        <div class="strategy-box">${d.recommendedStrategy}</div>
+      `;
+    }
+
+    // Deduct usage after successful result
+    incrementUsage();
+    updateUsageUI();
+
+  } catch(e) { showError(el, e.message); }
+  btn.disabled = false;
+  btn.textContent = type === 'description' ? 'Generate' : 'Analyze';
+}
+
+// ── ENTER KEY ──
+['kwInput','descInput','compInput'].forEach((id, i) => {
+  const types = ['keywords','description','competitor'];
+  document.getElementById(id).addEventListener('keydown', e => {
+    if (e.key === 'Enter') run(types[i]);
+  });
+});
+
+// ── INIT ──
+async function init() {
+  try {
+    const cfg = await fetch('/api/config').then(r => r.json());
+    ADSENSE_CLIENT = cfg.adsenseClient;
+    ADSENSE_SLOT   = cfg.adsenseSlot;
+    loadAdSenseScript();
+    // Inject banner ads
+    injectAd('topBanner', 'horizontal');
+    injectAd('bottomBanner', 'horizontal');
+  } catch(e) { console.warn('Config load failed:', e.message); }
+  updateUsageUI();
+}
+
+init();
+</script>
+</body>
+</html>
